@@ -51,8 +51,8 @@ services:
       image: bitnami/mysqld-exporter:latest
       networks:
         - back
-      environment:
-        DATA_SOURCE_NAME: wpuser:wppass@tcp(db:3306)/wpdb
+      volumes:
+        - ./my.cnf:/root/.my.cnf
       restart: on-failure
       ports:
         - "9104:9104"
