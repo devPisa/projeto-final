@@ -46,6 +46,16 @@ services:
       - back
     ports:
       - "9090:9090"
+  
+    mysqld-exporter:
+      image: prom/mysqld-exporter:latest
+      networks:
+        - back
+      environment:
+        DATA_SOURCE_NAME: wpuser:wppass@tcp(db:3306)/wpdb
+      restart: on-failure
+      ports:
+        - "9104:9104"
 
 networks:
   back:
