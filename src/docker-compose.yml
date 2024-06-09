@@ -48,7 +48,7 @@ services:
       - "9090:9090"
   
     mysqld-exporter:
-      image: prom/mysqld-exporter:latest
+      image: bitnami/mysqld-exporter:latest
       networks:
         - back
       environment:
