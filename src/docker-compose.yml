@@ -1,8 +1,6 @@
-version: '3.3'
-
 services:
   wordpress:
-    image: wordpress:latest
+    build: .
     volumes:
       - ./src:/var/www/html/wp-content/plugins/meu-plugin
     networks:
@@ -38,24 +36,54 @@ services:
     ports:
       - "8081:8080"
 
-  prometheus:
-    image: prom/prometheus:latest
-    volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
-    networks:
-      - back
-    ports:
-      - "9090:9090"
-  
-    mysqld-exporter:
-      image: bitnami/mysqld-exporter:latest
+    phpmyadmin:
+      depends_on:
+        - db
+      image: phpmyadmin:latest
       networks:
         - back
-      volumes:
-        - ./my.cnf:/root/.my.cnf
-      restart: on-failure
+      environment:
+        PMA_HOST: db
+        MYSQL_ROOT_PASSWORD: wppass
       ports:
-        - "9104:9104"
+        - "8082:80"
+
+  redis:
+    image: redis:latest
+    networks:
+      - back 
+
+  prometheus:
+    image: prom/prometheus:latest
+    networks:
+      - back
+    volumes:
+      - ./prometheus:/etc/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    ports:
+      - "9090:9090"
+
+  mysql-exporter:
+    image: prom/mysqld-exporter
+    networks:
+      - back
+    volumes:
+      - "./.my.cnf:/etc/mysql_exporter/.my.cnf:ro"
+    command:
+      - --config.my-cnf=/etc/mysql_exporter/.my.cnf
+      - --mysqld.address=db:3306
+    ports:
+      - "9104:9104"
+
+  redis_exporter:
+    image: oliver006/redis_exporter:latest
+    networks:
+      - back
+    environment:
+      REDIS_ADDR: redis:6379
+    ports:
+      - "9121:9121" 
 
 networks:
   back:
