@@ -2,7 +2,7 @@ services:
   wordpress:
     build: 
       context: ./
-      dockerfile: Dockerfile
+      dockerfile: src/Dockerfile
     volumes:
       - ./src:/var/www/html/wp-content/plugins/meu-plugin
     networks:
