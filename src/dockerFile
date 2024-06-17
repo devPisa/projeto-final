@@ -13,10 +13,8 @@ RUN mkdir -p /var/www/html/wp-content/plugins/meu-plugin
 COPY install-plugin.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/install-plugin.sh
 
-# Define o diretório de trabalho para onde o WordPress está instalado
+# Defina o diretório de trabalho para onde o WordPress está instalado
 WORKDIR /var/www/html/wp-content/plugins/meu-plugin
 
 # Executa o script de instalação como ponto de entrada
 ENTRYPOINT ["sh", "/usr/local/bin/install-plugin.sh"]
-
-
