@@ -1,8 +1,8 @@
+version: '3.8'
 services:
   wordpress:
-    build: 
-      context: ./
-      dockerfile: src/Dockerfile
+    image: wordpress:latest
+    build: .
     volumes:
       - ./src:/var/www/html/wp-content/plugins/meu-plugin
     networks:
@@ -45,7 +45,7 @@ services:
     networks:
       - back
     environment:
-      PMA_HOST: db
+      PMA_HOST: wpdb
       MYSQL_ROOT_PASSWORD: wppass
     ports:
       - "8082:80"
@@ -71,9 +71,9 @@ services:
     networks:
       - back
     volumes:
-      - "./.my.cnf:/etc/mysql_exporter/.my.cnf:ro"
+      - "./.my.cnf:/cfg/.my.cnf:ro"
     command:
-      - --config.my-cnf=/etc/mysql_exporter/.my.cnf
+      - --config.my-cnf=/cfg/.my.cnf
       - --mysqld.address=db:3306
     ports:
       - "9104:9104"
