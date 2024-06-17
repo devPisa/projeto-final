@@ -1,8 +1,8 @@
+version: '3.8'
 services:
   wordpress:
-    build: 
-      context: ./
-      dockerfile: Dockerfile
+    image: wordpress:latest
+    build: .
     volumes:
       - ./src:/var/www/html/wp-content/plugins/meu-plugin
     networks:
@@ -38,24 +38,14 @@ services:
     ports:
       - "8081:8080"
 
-    phpmyadmin:
-      depends_on:
-        - db
-      image: phpmyadmin:latest
-      networks:
-        - back
-      environment:
-        PMA_HOST: db
-        MYSQL_ROOT_PASSWORD: wppass
-      ports:
-        - "8082:80"
-
   redis:
     image: redis:latest
     networks:
-      - back 
+      - back
 
   prometheus:
+    depends_on:
+      - db
     image: prom/prometheus:latest
     networks:
       - back
@@ -66,26 +56,57 @@ services:
     ports:
       - "9090:9090"
 
-  mysql-exporter:
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /mnt/docker-data:/var/lib/docker:ro
+    ports:
+      - "8084:8080"
+    networks:
+      - back
+
+  mysqld-exporter:
+    depends_on:
+      - db
     image: prom/mysqld-exporter
     networks:
       - back
     volumes:
-      - "./.my.cnf:/etc/mysql_exporter/.my.cnf:ro"
+      - "./.my.cnf:/cfg/.my.cnf:ro"
     command:
-      - --config.my-cnf=/etc/mysql_exporter/.my.cnf
+      - --config.my-cnf=/cfg/.my.cnf
       - --mysqld.address=db:3306
     ports:
       - "9104:9104"
 
   redis_exporter:
+    depends_on:
+      - db
     image: oliver006/redis_exporter:latest
     networks:
       - back
     environment:
       REDIS_ADDR: redis:6379
     ports:
-      - "9121:9121" 
+      - "9121:9121"
+
+  node-exporter:
+    image: prom/node-exporter
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.ignored-mount-points=^/host/proc,/host/sys,/etc'
+    ports:
+      - "9100:9100"
+    networks:
+      - back
 
 networks:
   back:
